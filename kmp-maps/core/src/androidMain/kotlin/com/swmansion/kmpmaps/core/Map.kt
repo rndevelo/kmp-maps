@@ -11,7 +11,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -26,6 +28,7 @@ import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.clustering.Clustering
@@ -80,10 +83,15 @@ public actual fun Map(
             }
         }
 
-        LaunchedEffect(cameraPosition, mapLoaded) {
-            if (mapLoaded && cameraPosition != null) {
-                cameraPositionState.move(cameraPosition.toCameraUpdate())
-            }
+        // Apply camera updates from a single long-lived collector instead of a LaunchedEffect keyed on
+        // cameraPosition: continuous following passes a new cameraPosition every frame, which cancelled
+        // and relaunched the effect 60×/s and applied move() with irregular timing (visible stutter).
+        // snapshotFlow reacts only to actual changes, from one coroutine. [DRIVE-PUCK-NATIVE-001]
+        val currentCameraPosition by rememberUpdatedState(cameraPosition)
+        LaunchedEffect(mapLoaded) {
+            if (!mapLoaded) return@LaunchedEffect
+            snapshotFlow { currentCameraPosition }
+                .collect { pos -> pos?.let { cameraPositionState.move(it.toCameraUpdate()) } }
         }
 
         GoogleMap(
@@ -192,17 +200,13 @@ public actual fun Map(
             } else {
                 markers.forEach { marker ->
                     key(marker.getId()) {
+                        // Track the marker's coordinates via rememberUpdatedMarkerState rather than a
+                        // LaunchedEffect keyed on the coordinates: a marker that moves every frame (a
+                        // stable-id driving puck) changed that key every frame, cancelling and relaunching
+                        // a coroutine per frame just to set the position — the stutter on continuous
+                        // motion. This updates the position in place with no coroutine churn.
                         val markerState =
-                            remember(marker.getId()) {
-                                MarkerState(marker.coordinates.toGoogleMapsLatLng())
-                            }
-
-                        LaunchedEffect(marker.coordinates) {
-                            val newLatLng = marker.coordinates.toGoogleMapsLatLng()
-                            if (markerState.position != newLatLng) {
-                                markerState.position = newLatLng
-                            }
-                        }
+                            rememberUpdatedMarkerState(marker.coordinates.toGoogleMapsLatLng())
 
                         val content = customMarkerContent[marker.contentId]
 
