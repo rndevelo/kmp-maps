@@ -25,6 +25,7 @@ public actual fun Map(
     uiSettings: MapUISettings,
     clusterSettings: ClusterSettings,
     markers: List<Marker>,
+    @Suppress("UNUSED_PARAMETER") liveMarkers: List<LiveMarker>,
     circles: List<Circle>,
     polygons: List<Polygon>,
     polylines: List<Polyline>,

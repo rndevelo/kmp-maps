@@ -2,6 +2,7 @@ package com.swmansion.kmpmaps.core
 
 import androidx.annotation.RestrictTo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -140,6 +141,27 @@ public data class Marker(
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public fun Marker.getId(): String = id?.let { "marker_$it" } ?: "marker_${hashCode()}"
+
+/**
+ * A marker whose POSITION changes frequently (e.g. a live vehicle puck). Its [position] and [rotation]
+ * are observable Compose [State] read by the map INSIDE its own isolated scope, so updating them does
+ * NOT recompose the caller — the marker glides to each new position natively, off the recomposition
+ * path. Use this for anything that moves continuously; a normal [Marker] in the `markers` list
+ * recomposes the whole map on every move. [DRIVE-PUCK-NATIVE-001]
+ *
+ * @property id Stable identity.
+ * @property contentId Looks up the composable in the Map's `customMarkerContent`.
+ * @property position Observable geographic position; changes glide natively.
+ * @property rotation Observable rotation in degrees (clockwise).
+ * @property androidMarkerOptions Android-specific options (anchor, zIndex, flat, …).
+ */
+public class LiveMarker(
+    public val id: String,
+    public val contentId: String?,
+    public val position: State<Coordinates>,
+    public val rotation: State<Float>,
+    public val androidMarkerOptions: AndroidMarkerOptions = AndroidMarkerOptions(),
+)
 
 /**
  * Represents a circle overlay on the map.

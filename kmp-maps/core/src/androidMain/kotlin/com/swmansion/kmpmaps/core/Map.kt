@@ -28,6 +28,7 @@ import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapsComposeExperimentalApi
+import kotlinx.coroutines.flow.collectLatest
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerComposable
 import com.google.android.gms.maps.model.LatLng
@@ -42,6 +43,51 @@ import com.google.maps.android.data.geojson.GeoJsonLayer as GoogleGeoJsonLayer
 /** Duration a stable-id marker glides between successive coordinates. [DRIVE-PUCK-NATIVE-001] */
 private const val MARKER_GLIDE_MS = 1000
 
+/**
+ * Renders a [LiveMarker]. Its [LiveMarker.position] is observed in a coroutine (snapshotFlow) and the
+ * marker glides to each new value NATIVELY — no composable recomposes when it moves, so the caller's
+ * map is never rebuilt under a moving marker. [LiveMarker.rotation] is read here, recomposing ONLY this
+ * isolated node. [DRIVE-PUCK-NATIVE-001]
+ */
+@OptIn(MapsComposeExperimentalApi::class)
+@Composable
+private fun LiveMarkerNode(
+    live: LiveMarker,
+    customMarkerContent: Map<String, @Composable (Marker) -> Unit>,
+    onMarkerClick: ((Marker) -> Unit)?,
+) {
+    val markerState = remember { MarkerState(live.position.value.toGoogleMapsLatLng()) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { live.position.value }.collectLatest { target ->
+            val end = target.toGoogleMapsLatLng()
+            val start = markerState.position
+            if (start.latitude == end.latitude && start.longitude == end.longitude) return@collectLatest
+            Animatable(0f).animateTo(1f, tween(MARKER_GLIDE_MS, easing = LinearEasing)) {
+                markerState.position = LatLng(
+                    start.latitude + (end.latitude - start.latitude) * value,
+                    start.longitude + (end.longitude - start.longitude) * value,
+                )
+            }
+        }
+    }
+    val content = customMarkerContent[live.contentId] ?: return
+    // Stable placeholder Marker for the content/click callback (live-marker content ignores position).
+    val marker = remember(live.id) { Marker(coordinates = live.position.value, title = null, contentId = live.contentId, id = live.id) }
+    MarkerComposable(
+        live.contentId ?: live.id,
+        state = markerState,
+        anchor = live.androidMarkerOptions.anchor.toOffset(),
+        zIndex = live.androidMarkerOptions.zIndex ?: 0.0f,
+        rotation = live.rotation.value,
+        flat = live.androidMarkerOptions.flat,
+        onClick = {
+            onMarkerClick?.invoke(marker)
+            onMarkerClick == null
+        },
+        content = { content(marker) },
+    )
+}
+
 /** Android implementation of the Map composable using Google Maps. */
 @OptIn(ExperimentalPermissionsApi::class, MapsComposeExperimentalApi::class)
 @Composable
@@ -52,6 +98,7 @@ public actual fun Map(
     uiSettings: MapUISettings,
     clusterSettings: ClusterSettings,
     markers: List<Marker>,
+    liveMarkers: List<LiveMarker>,
     circles: List<Circle>,
     polygons: List<Polygon>,
     polylines: List<Polyline>,
@@ -290,6 +337,12 @@ public actual fun Map(
                             )
                         }
                     }
+                }
+            }
+
+            liveMarkers.forEach { live ->
+                key(live.id) {
+                    LiveMarkerNode(live, customMarkerContent, onMarkerClick)
                 }
             }
 

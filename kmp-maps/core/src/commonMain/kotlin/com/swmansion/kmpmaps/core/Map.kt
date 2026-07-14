@@ -115,6 +115,7 @@ public expect fun Map(
     uiSettings: MapUISettings = MapUISettings(),
     clusterSettings: ClusterSettings = ClusterSettings(),
     markers: List<Marker> = emptyList(),
+    liveMarkers: List<LiveMarker> = emptyList(),
     circles: List<Circle> = emptyList(),
     polygons: List<Polygon> = emptyList(),
     polylines: List<Polyline> = emptyList(),
