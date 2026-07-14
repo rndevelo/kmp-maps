@@ -2,6 +2,9 @@ package com.swmansion.kmpmaps.core
 
 import android.Manifest
 import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -27,14 +30,17 @@ import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerComposable
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.clustering.Clustering
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.data.Layer
 import com.google.maps.android.data.geojson.GeoJsonLayer as GoogleGeoJsonLayer
+
+/** Duration a stable-id marker glides between successive coordinates. [DRIVE-PUCK-NATIVE-001] */
+private const val MARKER_GLIDE_MS = 1000
 
 /** Android implementation of the Map composable using Google Maps. */
 @OptIn(ExperimentalPermissionsApi::class, MapsComposeExperimentalApi::class)
@@ -200,13 +206,39 @@ public actual fun Map(
             } else {
                 markers.forEach { marker ->
                     key(marker.getId()) {
-                        // Track the marker's coordinates via rememberUpdatedMarkerState rather than a
-                        // LaunchedEffect keyed on the coordinates: a marker that moves every frame (a
-                        // stable-id driving puck) changed that key every frame, cancelling and relaunching
-                        // a coroutine per frame just to set the position — the stutter on continuous
-                        // motion. This updates the position in place with no coroutine churn.
                         val markerState =
-                            rememberUpdatedMarkerState(marker.coordinates.toGoogleMapsLatLng())
+                            remember(marker.getId()) {
+                                MarkerState(marker.coordinates.toGoogleMapsLatLng())
+                            }
+
+                        // Move the marker to each new coordinate. A stable-id marker GLIDES natively: the
+                        // animation runs in this coroutine and only writes MarkerState.position, which
+                        // maps-compose applies to the native marker via its node — NOT by recomposing the
+                        // Compose tree. So a continuously-moving marker (a live driving puck) never forces
+                        // per-frame recomposition of the caller, which was saturating the main thread and
+                        // starving touch input / stuttering pans. Callers pass raw fixes (~1 Hz) and get a
+                        // smooth glide for free. Markers without a stable id snap (previous behaviour).
+                        // [DRIVE-PUCK-NATIVE-001]
+                        val target = marker.coordinates.toGoogleMapsLatLng()
+                        LaunchedEffect(target) {
+                            val start = markerState.position
+                            if (start.latitude == target.latitude && start.longitude == target.longitude) {
+                                return@LaunchedEffect
+                            }
+                            if (marker.id != null) {
+                                Animatable(0f).animateTo(
+                                    targetValue = 1f,
+                                    animationSpec = tween(MARKER_GLIDE_MS, easing = LinearEasing),
+                                ) {
+                                    markerState.position = LatLng(
+                                        start.latitude + (target.latitude - start.latitude) * value,
+                                        start.longitude + (target.longitude - start.longitude) * value,
+                                    )
+                                }
+                            } else {
+                                markerState.position = target
+                            }
+                        }
 
                         val content = customMarkerContent[marker.contentId]
 
