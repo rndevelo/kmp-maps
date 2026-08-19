@@ -65,12 +65,20 @@ android {
 dokka { dokkaPublications.configureEach { suppressInheritedMembers = true } }
 
 mavenPublishing {
-    publishToMavenCentral()
+    // Explicit: uploading only creates a pending deployment in the Central Portal. Releasing it
+    // to Maven Central is permanent and stays a deliberate manual step.
+    publishToMavenCentral(automaticRelease = false)
     signAllPublications()
     pom {
-        name = "KMP Maps"
-        description = "Universal map component for Compose Multiplatform."
-        url = "https://github.com/software-mansion/kmp-maps"
+        name = "KMP Maps (rndevelo fork)"
+        description =
+            "Unofficial fork of software-mansion/kmp-maps: a universal map component for Compose " +
+                "Multiplatform. Adds stable marker ids, native marker rotation and LiveMarker, so " +
+                "a moving marker glides instead of being destroyed and recreated on every " +
+                "position change. Offered upstream as PR #170; this fork exists only until that " +
+                "lands in an official release."
+        url = "https://github.com/rndevelo/kmp-maps"
+        inceptionYear = "2025"
         licenses {
             license {
                 name = "The MIT License"
@@ -78,30 +86,51 @@ mavenPublishing {
             }
         }
         scm {
-            connection = "scm:git:git://github.com/software-mansion/kmp-maps.git"
-            developerConnection = "scm:git:ssh://github.com/software-mansion/kmp-maps.git"
-            url = "https://github.com/software-mansion/kmp-maps"
+            connection = "scm:git:git://github.com/rndevelo/kmp-maps.git"
+            developerConnection = "scm:git:ssh://github.com/rndevelo/kmp-maps.git"
+            url = "https://github.com/rndevelo/kmp-maps"
         }
         developers {
+            // Fork maintainer: responsible for this artifact only, not for upstream.
+            developer {
+                id = "rndevelo"
+                name = "rndevelo"
+                url = "https://github.com/rndevelo"
+                roles = listOf("Fork maintainer")
+            }
+            // Original authors of KMP Maps at Software Mansion. Listed for attribution under the
+            // MIT license; they neither publish nor endorse this fork.
             developer {
                 id = "arturgesiarz"
                 name = "Artur Gęsiarz"
                 email = "artur.gesiarz@swmansion.com"
+                organization = "Software Mansion"
+                organizationUrl = "https://swmansion.com"
+                roles = listOf("Original author")
             }
             developer {
                 id = "marekkaput"
                 name = "Marek Kaput"
                 email = "marek.kaput@swmansion.com"
+                organization = "Software Mansion"
+                organizationUrl = "https://swmansion.com"
+                roles = listOf("Original author")
             }
             developer {
                 id = "patrickmichalik"
                 name = "Patrick Michalik"
                 email = "patrick.michalik@swmansion.com"
+                organization = "Software Mansion"
+                organizationUrl = "https://swmansion.com"
+                roles = listOf("Original author")
             }
             developer {
                 id = "justynagreda"
                 name = "Justyna Gręda"
                 email = "justyna.greda@swmansion.com"
+                organization = "Software Mansion"
+                organizationUrl = "https://swmansion.com"
+                roles = listOf("Original author")
             }
         }
     }

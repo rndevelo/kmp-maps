@@ -1,8 +1,11 @@
 plugins { alias(libs.plugins.jetBrains.dokka) }
 
 subprojects {
-    group = "com.swmansion.kmpmaps"
-    version = "0.9.1"
+    // Fork coordinates: com.swmansion.* belongs to Software Mansion, so this fork publishes under
+    // the fork owner's own verified Maven Central namespace. The version keeps the fork suffix so
+    // it can never be mistaken for an upstream release. [DRIVE-PUCK-NATIVE-001]
+    group = "io.github.rndevelo.kmpmaps"
+    version = "0.9.1-puck4"
 }
 
 dependencies {
