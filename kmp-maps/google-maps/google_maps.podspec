@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'google_maps'
-    spec.version                  = '0.9.1'
+    spec.version                  = '0.9.1-puck5'
     spec.homepage                 = 'https://github.com/software-mansion/kmp-maps'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
@@ -44,5 +44,5 @@ Pod::Spec.new do |spec|
             SCRIPT
         }
     ]
-    spec.resources = ['build/compose/cocoapods/compose-resources']
+    spec.resources = ['build\compose\cocoapods\compose-resources']
 end

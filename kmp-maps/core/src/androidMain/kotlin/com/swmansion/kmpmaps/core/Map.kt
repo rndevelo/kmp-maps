@@ -30,7 +30,6 @@ import com.google.maps.android.compose.MapEffect
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import kotlinx.coroutines.flow.collectLatest
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerComposable
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polygon
@@ -73,7 +72,7 @@ private fun LiveMarkerNode(
     val content = customMarkerContent[live.contentId] ?: return
     // Stable placeholder Marker for the content/click callback (live-marker content ignores position).
     val marker = remember(live.id) { Marker(coordinates = live.position.value, title = null, contentId = live.contentId, id = live.id) }
-    MarkerComposable(
+    SafeMarkerComposable(
         live.contentId ?: live.id,
         state = markerState,
         anchor = live.androidMarkerOptions.anchor.toOffset(),
@@ -304,7 +303,7 @@ public actual fun Map(
                             // identity ([getId]). This lets a stable-id marker update its glyph
                             // (e.g. a driving puck's baked heading) without being disposed and
                             // recreated, which is what caused flicker on moving markers.
-                            MarkerComposable(
+                            SafeMarkerComposable(
                                 marker.contentId ?: marker.getId(),
                                 state = markerState,
                                 title = marker.title,
