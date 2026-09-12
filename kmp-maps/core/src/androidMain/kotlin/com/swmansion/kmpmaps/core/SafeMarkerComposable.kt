@@ -72,10 +72,7 @@ public fun SafeMarkerComposable(
         onClick = onClick,
         onInfoWindowClick = onInfoWindowClick,
         onInfoWindowClose = onInfoWindowClose,
-        onInfoWindowLongClick = onInfoWindowLongClick,
-        onMarkerDrag = onMarkerDrag,
-        onMarkerDragEnd = onMarkerDragEnd,
-        onMarkerDragStart = onMarkerDragStart
+        onInfoWindowLongClick = onInfoWindowLongClick
     )
 }
 
