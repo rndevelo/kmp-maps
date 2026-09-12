@@ -7,6 +7,7 @@ import com.swmansion.kmpmaps.core.Circle
 import com.swmansion.kmpmaps.core.ClusterSettings
 import com.swmansion.kmpmaps.core.Coordinates
 import com.swmansion.kmpmaps.core.GeoJsonLayer
+import com.swmansion.kmpmaps.core.LiveMarker
 import com.swmansion.kmpmaps.core.Map as CoreMap
 import com.swmansion.kmpmaps.core.MapProperties
 import com.swmansion.kmpmaps.core.MapUISettings
@@ -23,6 +24,7 @@ public actual fun Map(
     uiSettings: MapUISettings,
     clusterSettings: ClusterSettings,
     markers: List<Marker>,
+    liveMarkers: List<LiveMarker>,
     circles: List<Circle>,
     polygons: List<Polygon>,
     polylines: List<Polyline>,
@@ -47,6 +49,7 @@ public actual fun Map(
         uiSettings,
         clusterSettings = clusterSettings,
         markers,
+        liveMarkers,
         circles,
         polygons,
         polylines,

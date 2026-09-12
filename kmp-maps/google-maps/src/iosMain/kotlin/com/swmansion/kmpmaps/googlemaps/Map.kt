@@ -28,6 +28,7 @@ import com.swmansion.kmpmaps.core.ClusterSettings
 import com.swmansion.kmpmaps.core.Coordinates
 import com.swmansion.kmpmaps.core.DefaultPin
 import com.swmansion.kmpmaps.core.GeoJsonLayer
+import com.swmansion.kmpmaps.core.LiveMarker
 import com.swmansion.kmpmaps.core.MapProperties
 import com.swmansion.kmpmaps.core.MapTheme
 import com.swmansion.kmpmaps.core.MapUISettings
@@ -52,6 +53,7 @@ public actual fun Map(
     uiSettings: MapUISettings,
     clusterSettings: ClusterSettings,
     markers: List<Marker>,
+    @Suppress("UNUSED_PARAMETER") liveMarkers: List<LiveMarker>,
     circles: List<Circle>,
     polygons: List<Polygon>,
     polylines: List<Polyline>,

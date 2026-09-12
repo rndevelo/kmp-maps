@@ -7,6 +7,7 @@ import com.swmansion.kmpmaps.core.Circle
 import com.swmansion.kmpmaps.core.ClusterSettings
 import com.swmansion.kmpmaps.core.Coordinates
 import com.swmansion.kmpmaps.core.GeoJsonLayer
+import com.swmansion.kmpmaps.core.LiveMarker
 import com.swmansion.kmpmaps.core.MapProperties
 import com.swmansion.kmpmaps.core.MapUISettings
 import com.swmansion.kmpmaps.core.Marker
@@ -29,6 +30,7 @@ import com.swmansion.kmpmaps.core.Polyline
  * @param uiSettings UI settings that control interactive elements and gestures
  * @param clusterSettings Configuration settings for marker clustering behavior
  * @param markers List of markers to display on the map
+ * @param liveMarkers List of live markers to display on the map
  * @param circles List of circles to display on the map
  * @param polygons List of polygons to display on the map
  * @param polylines List of polylines to display on the map
@@ -54,6 +56,7 @@ public expect fun Map(
     uiSettings: MapUISettings = MapUISettings(),
     clusterSettings: ClusterSettings = ClusterSettings(),
     markers: List<Marker> = emptyList(),
+    liveMarkers: List<LiveMarker> = emptyList(),
     circles: List<Circle> = emptyList(),
     polygons: List<Polygon> = emptyList(),
     polylines: List<Polyline> = emptyList(),
