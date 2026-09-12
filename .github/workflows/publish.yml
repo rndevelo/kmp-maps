@@ -5,7 +5,9 @@ on:
   workflow_dispatch:
 jobs:
   publish:
-    runs-on: [self-hosted, macOS, ARM64]
+    # Publishing needs iOS Kotlin/Native artifacts, so it must run on macOS. The fork has no
+    # self-hosted runner registered; GitHub-hosted macOS keeps releases executable from the tag.
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v5
       - run: ./gradlew publishToMavenCentral
