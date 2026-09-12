@@ -10,9 +10,18 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v5
+      - name: Decode signing key
+        env:
+          SIGNING_KEY_B64: ${{ secrets.SIGNING_IN_MEMORY_KEY_B64 }}
+        run: |
+          printf '%s' "$SIGNING_KEY_B64" | base64 --decode > "$RUNNER_TEMP/signing-key.asc"
+          {
+            echo 'ORG_GRADLE_PROJECT_signingInMemoryKey<<SIGNING_KEY_EOF'
+            cat "$RUNNER_TEMP/signing-key.asc"
+            echo 'SIGNING_KEY_EOF'
+          } >> "$GITHUB_ENV"
       - run: ./gradlew publishToMavenCentral
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
