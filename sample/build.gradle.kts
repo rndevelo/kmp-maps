@@ -3,7 +3,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-version = "0.9.1-puck5"
+version = "0.9.1-puck6"
 
 plugins {
     alias(libs.plugins.android.application)
@@ -20,7 +20,7 @@ kotlin {
     jvmToolchain(17)
     androidTarget { compilerOptions { jvmTarget.set(JvmTarget.JVM_11) } }
 
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Sample"
             isStatic = true
@@ -33,7 +33,7 @@ kotlin {
     cocoapods {
         summary = "Universal map component for Compose Multiplatform."
         homepage = "https://github.com/software-mansion/kmp-maps"
-        version = "0.9.1-puck5"
+        version = "0.9.1-puck6"
         ios.deploymentTarget = "16.0"
         framework {
             baseName = "Sample"

@@ -13,7 +13,7 @@ kotlin {
     jvmToolchain(17)
     androidTarget { publishLibraryVariants("release") }
 
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "google-maps"
             isStatic = true

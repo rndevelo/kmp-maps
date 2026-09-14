@@ -159,10 +159,13 @@ internal class MapDelegate(
      * @param didTapOverlay The overlay that was tapped
      */
     override fun mapView(mapView: GMSMapView, didTapOverlay: GMSOverlay) {
-        when (didTapOverlay) {
-            is GMSCircle -> circleMapping[didTapOverlay]?.let { onCircleClick?.invoke(it) }
-            is GMSPolygon -> polygonMapping[didTapOverlay]?.let { onPolygonClick?.invoke(it) }
-            is GMSPolyline -> polylineMapping[didTapOverlay]?.let { onPolylineClick?.invoke(it) }
+        // Kotlin 2.4 reports these cinterop subclass checks as "always false" (hard error) although
+        // GMSCircle/GMSPolygon/GMSPolyline do extend GMSOverlay; the runtime check is ObjC
+        // isKindOfClass either way. Widening to Any keeps the dispatch and silences the checker.
+        when (val overlay: Any = didTapOverlay) {
+            is GMSCircle -> circleMapping[overlay]?.let { onCircleClick?.invoke(it) }
+            is GMSPolygon -> polygonMapping[overlay]?.let { onPolygonClick?.invoke(it) }
+            is GMSPolyline -> polylineMapping[overlay]?.let { onPolylineClick?.invoke(it) }
         }
     }
 
